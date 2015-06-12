@@ -26,6 +26,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <openssl/sha.h>
 #include <openssl/aes.h>
@@ -225,8 +226,16 @@ void client_pair(const char *address) {
   }
 
   char pin[5];
-  sprintf(pin, "%d%d%d%d", (int)random() % 10, (int)random() % 10, (int)random() % 10, (int)random() % 10);
-  printf("Please enter the following PIN on the target PC: %s\n", pin);
+  FILE *fd = fopen("pin.txt", "r");
+  char ch;
+  pin[0] = fgetc(fd);
+  pin[1] = fgetc(fd);
+  pin[2] = fgetc(fd);
+  pin[3] = fgetc(fd);
+  //printf("pin:%c",pin);
+  sprintf(pin, "%d%d%d%d", pin[0] - '0', pin[1] - '0', pin[2] - '0', pin[3] - '0');
+  //sprintf(pin, "%d%d%d%d", (int)random() % 10, (int)random() % 10, (int)random() % 10, (int)random() % 10);
+  printf("Please enter the following PIN on the target PC: %s\r\n", pin);
 
   unsigned char salt_data[16];
   char salt_hex[33];
@@ -310,7 +319,14 @@ void client_pair(const char *address) {
   http_request(url, data);
   http_free_data(data);
 
-  printf("Paired\n");
+  if(client_is_paired(address))
+  {
+  printf("Paired\r\n");
+  }
+  else
+  {
+  printf("Error\r\n");
+  }
 }
 
 struct app_list *client_applist(const char *address) {
